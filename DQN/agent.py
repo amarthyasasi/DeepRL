@@ -111,30 +111,30 @@ class Agent:
         score = 0        
 
         for e in range(1, EPISODES + 1):
-        state = env.reset()
-        steps = 0
-        while True:
-            state = torch.FloatTensor([state])
-            action = act(state)
-            print(action)
-            next_state, reward, done = env.step(action)
+            state = env.reset()
+            steps = 0
+            while True:
+                state = torch.FloatTensor([state])
+                action = act(state)
+                print(action)
+                next_state, reward, done = env.step(action)
 
-            memorize(state, action, reward, next_state)
-            learn()
+                memorize(state, action, reward, next_state)
+                learn()
 
-            state = next_state
-            steps += 1
-            score += reward
+                state = next_state
+                steps += 1
+                score += reward
 
-            if done:
-                print("episode:{0}, reward: {1}, score: {2}".format(e, reward, score))
-                print("----------------------------------------------------")
-                score_history.append(steps)
-                reward_history.append(reward)
-                f = open("reward.txt", "a")
-                f.write(str(reward))
-                f.close()
-                f2 = open("score.txt", "a")
-                f2.write(str(score))
-                f2.close()
-                break
+                if done:
+                    print("episode:{0}, reward: {1}, score: {2}".format(e, reward, score))
+                    print("----------------------------------------------------")
+                    score_history.append(steps)
+                    reward_history.append(reward)
+                    f = open("reward.txt", "a")
+                    f.write(str(reward))
+                    f.close()
+                    f2 = open("score.txt", "a")
+                    f2.write(str(score))
+                    f2.close()
+                    break
