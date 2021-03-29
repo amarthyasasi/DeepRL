@@ -39,7 +39,7 @@ class DQNAgent:
         self.optimizer = optim.Adam(self.model.parameters(), LR)
         self.steps_done = 0
         self.loss_list = []
-        self.f4 = open('epoch_loss.txt', 'a')
+        self.f4 = open('epoch_loss.txt', 'w')
     
     def act(self, state):
         eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.steps_done / EPS_DECAY)
