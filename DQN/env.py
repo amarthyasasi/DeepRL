@@ -21,9 +21,7 @@ class DroneEnv(object):
         self.client.enableApiControl(True)
         self.client.armDisarm(True)
 
-        self.pose = self.client.simGetVehiclePose()
-        self.state = self.client.getMultirotorState().kinematics_estimated.position
-        print(self.state.x_val, self.state.y_val, self.state.z_val)
+        
         self.quad_offset = (0, 0, 0)
         initX = 52
         initY = 60
@@ -34,10 +32,13 @@ class DroneEnv(object):
         self.cnt_collision = 0
         self.collision_change = False
 
-        self.client.takeoffAsync().join()
-        print("take off moving positon")
+        # self.client.takeoffAsync().join()
+        # print("take off moving positon")
         self.client.moveToPositionAsync(initX, initY, initZ, 5).join()
-
+        self.client.moveByVelocityAsync(1, -0.67, -0.8, 5).join()
+        self.pose = self.client.simGetVehiclePose()
+        self.state = self.client.getMultirotorState().kinematics_estimated.position
+        print(self.state.x_val, self.state.y_val, self.state.z_val)
         self.ep = 0
 
     def step(self, action):
@@ -94,9 +95,9 @@ class DroneEnv(object):
         self.client.enableApiControl(True)
         self.client.armDisarm(True)
 
-        self.pose = self.client.simGetVehiclePose()
-        self.state = self.client.getMultirotorState().kinematics_estimated.position
-        print(self.state.x_val, self.state.y_val, self.state.z_val)
+        # self.pose = self.client.simGetVehiclePose()
+        # self.state = self.client.getMultirotorState().kinematics_estimated.position
+        # print(self.state.x_val, self.state.y_val, self.state.z_val)
         self.quad_offset = (0, 0, 0)
         initX = 72
         initY = 60
@@ -107,9 +108,13 @@ class DroneEnv(object):
         self.cnt_collision = 0
         self.collision_change = False
 
-        self.client.takeoffAsync().join()
-        print("take off moving positon")
+        # self.client.takeoffAsync().join()
+        # print("take off moving positon")
         self.client.moveToPositionAsync(initX, initY, initZ, 5).join()
+        self.client.moveByVelocityAsync(1, -0.67, -0.8, 5).join()
+        self.pose = self.client.simGetVehiclePose()
+        self.state = self.client.getMultirotorState().kinematics_estimated.position
+        print(self.state.x_val, self.state.y_val, self.state.z_val)
         responses = self.client.simGetImages(
             [airsim.ImageRequest("1", airsim.ImageType.Scene, False, False)]
         )
@@ -215,7 +220,7 @@ class DroneEnv(object):
 
     def interpret_action(self, action):
         """Interprete action"""
-        scaling_factor = 1.5
+        scaling_factor = 0.75
         if action.item() == 0:
             self.quad_offset = (0, 0, 0)
         elif action.item() == 1:
