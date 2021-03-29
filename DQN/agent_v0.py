@@ -19,7 +19,7 @@ from env import DroneEnv
 env = DroneEnv()
 
 
-EPISODES = 50  # number of episodes
+EPISODES = 30  # number of episodes
 EPS_START = 0.7  # e-greedy threshold start value
 EPS_END = 0.05  # e-greedy threshold end value
 EPS_DECAY = 5000  # e-greedy threshold decay
@@ -27,7 +27,8 @@ GAMMA = 0.8  # Q-learning discount factor
 LR = 0.001  # NN optimizer learning rate
 BATCH_SIZE = 1  # Q-learning batch size
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cpu')
 
 class DQNAgent:
     def __init__(self):
@@ -117,7 +118,7 @@ for e in range(1, EPISODES+1):
         f3.write(str(reward)+"\n")
         
         
-        if done or steps>50:
+        if done or steps>60:
             print("episode:{0}, reward: {1}, score: {2}".format(e, reward, score))
             print("----------------------------------------------------")
             score_history.append(steps)
