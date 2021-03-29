@@ -27,7 +27,7 @@ class DroneEnv(object):
         self.quad_offset = (0, 0, 0)
         initX = 52
         initY = 60
-        initZ = 50
+        initZ = -50
 
         self.start_collision = "Cube"
         self.next_collision = "Cube"
@@ -97,7 +97,7 @@ class DroneEnv(object):
         self.quad_offset = (0, 0, 0)
         initX = 72
         initY = 60
-        initZ = 90
+        initZ = -50
 
         self.start_collision = "Cube"
         self.next_collision = "Cube"
@@ -165,7 +165,7 @@ class DroneEnv(object):
         dist = self.get_distance(quad_state)
         if dist<1:
             dist =1
-        reward += 50/dist
+        reward += 300/dist
         print(reward)
         return reward
 

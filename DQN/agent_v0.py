@@ -76,7 +76,8 @@ class DQNAgent:
         self.optimizer.zero_grad()
         loss.backward()
         self.loss_list.append(loss)
-        
+        f4 = open('epoch_loss.txt', 'a')
+        f4.write(str(loss))
         self.optimizer.step()
 
     def get_loss(self):
@@ -107,6 +108,7 @@ for e in range(1, EPISODES+1):
 
         f3 = open('epoch_reward.txt', 'a')
         f3.write(str(reward))
+        
         
         if done:
             print("episode:{0}, reward: {1}, score: {2}".format(e, reward, score))
