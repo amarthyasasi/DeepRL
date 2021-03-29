@@ -189,7 +189,7 @@ class DroneEnv(object):
             response.image_data_uint8, dtype=np.uint8
         ) 
         img_rgba = img1d.reshape(
-            (response.height, response.width, 4)
+            (response.height, response.width, 3)
         ) 
         img2d = np.flipud(img_rgba)
 
