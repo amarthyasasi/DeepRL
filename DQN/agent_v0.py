@@ -38,6 +38,7 @@ class DQNAgent:
         self.memory = deque(maxlen=10000)
         self.optimizer = optim.Adam(self.model.parameters(), LR)
         self.steps_done = 0
+        self.loss_list = []
     
     def act(self, state):
         eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.steps_done / EPS_DECAY)
@@ -74,14 +75,19 @@ class DQNAgent:
         loss = F.mse_loss(current_q.squeeze(), expected_q)
         self.optimizer.zero_grad()
         loss.backward()
+        self.loss_list.append(loss)
         self.optimizer.step()
+
+    def get_loss(self):
+        return self.loss_list
+
 
 
 agent = DQNAgent()
 score_history = []
 reward_history = []
 score = 0
-
+reward_list = []
 for e in range(1, EPISODES+1):
     state = env.reset()
     steps = 0
@@ -96,7 +102,7 @@ for e in range(1, EPISODES+1):
         state = next_state
         steps += 1
         score += reward
-        
+        reward_list.append(reward)
         if done:
             print("episode:{0}, reward: {1}, score: {2}".format(e, reward, score))
             print("----------------------------------------------------")
@@ -109,3 +115,15 @@ for e in range(1, EPISODES+1):
             f2.write(str(score))
             f2.close()
             break
+
+losses = agent.get_loss()
+fig = plt.figure()
+plt.subplot(1,2,1)
+plt.plot(losses)
+plt.title("Loss vs Epoch")
+
+plt.subplot(1,2,2)
+plt.plot(reward_list)
+plt.title("Reward vs Epoch")
+
+plt.savefig('losses.png')

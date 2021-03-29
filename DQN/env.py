@@ -25,9 +25,9 @@ class DroneEnv(object):
         self.state = self.client.getMultirotorState().kinematics_estimated.position
         print(self.state.x_val, self.state.y_val, self.state.z_val)
         self.quad_offset = (0, 0, 0)
-        initX = 162
-        initY = -320
-        initZ = -150
+        initX = 52
+        initY = 60
+        initZ = 50
 
         self.start_collision = "Cube"
         self.next_collision = "Cube"
@@ -81,7 +81,7 @@ class DroneEnv(object):
 
         result = self.compute_reward(quad_state, quad_vel, collision_info)
         state = self.get_obs()
-        done = self.isDone(result)
+        done = self.isDone(result,quad_state)
         return state, result, done
 
     def reset(self):
@@ -95,9 +95,9 @@ class DroneEnv(object):
         self.state = self.client.getMultirotorState().kinematics_estimated.position
         print(self.state.x_val, self.state.y_val, self.state.z_val)
         self.quad_offset = (0, 0, 0)
-        initX = 162
-        initY = -320
-        initZ = -150
+        initX = 72
+        initY = 60
+        initZ = 90
 
         self.start_collision = "Cube"
         self.next_collision = "Cube"
@@ -159,13 +159,18 @@ class DroneEnv(object):
                     reward = -100
             else:
                 reward = 0
-        if quad_state.z_val < -280:
-            reward = -100
+        # if quad_state.z_val < -280:
+        #     reward = -100
+
+        dist = self.get_distance(quad_state)
+        if dist<1:
+            dist =1
+        reward += 50/dist
         print(reward)
         return reward
 
 
-    def isDone(self, reward):
+    def isDone(self, reward, quad_state):
         """Check if episode is done"""
         done = 0
         if reward <= -10:
@@ -180,6 +185,9 @@ class DroneEnv(object):
             self.client.reset()
             self.client.enableApiControl(False)
             time.sleep(1)
+        dist = self.get_distance(quad_state)
+        if dist<1:
+            done = 1
         return done
 
     def transform_input(self, responses):
