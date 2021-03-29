@@ -39,6 +39,7 @@ class DQNAgent:
         self.optimizer = optim.Adam(self.model.parameters(), LR)
         self.steps_done = 0
         self.loss_list = []
+        self.f4 = open('epoch_loss.txt', 'a')
     
     def act(self, state):
         eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.steps_done / EPS_DECAY)
@@ -76,8 +77,8 @@ class DQNAgent:
         self.optimizer.zero_grad()
         loss.backward()
         self.loss_list.append(loss)
-        f4 = open('epoch_loss.txt', 'a')
-        f4.write(str(loss))
+        
+        self.f4.write(str(loss)+"\n")
         self.optimizer.step()
 
     def get_loss(self):
@@ -90,6 +91,10 @@ score_history = []
 reward_history = []
 score = 0
 reward_list = []
+f3 = open('epoch_reward.txt', 'w')
+f2 = open('score.txt', 'w')
+f = open('reward.txt', 'w')
+
 for e in range(1, EPISODES+1):
     state = env.reset()
     steps = 0
@@ -106,8 +111,7 @@ for e in range(1, EPISODES+1):
         score += reward
         reward_list.append(reward)
 
-        f3 = open('epoch_reward.txt', 'a')
-        f3.write(str(reward))
+        f3.write(str(reward)+"\n")
         
         
         if done:
@@ -115,12 +119,11 @@ for e in range(1, EPISODES+1):
             print("----------------------------------------------------")
             score_history.append(steps)
             reward_history.append(reward)
-            f = open('reward.txt', 'a')
-            f.write(str(reward))
-            f.close()
-            f2 = open('score.txt', 'a')
-            f2.write(str(score))
-            f2.close()
+            
+            f.write(str(reward)+"\n")
+            
+            
+            f2.write(str(score)+"\n")
             break
 
 losses = agent.get_loss()
@@ -134,3 +137,7 @@ plt.plot(reward_list)
 plt.title("Reward vs Epoch")
 
 plt.savefig('losses.png')
+f.close()
+f2.close()
+f3.close()
+f4.close()

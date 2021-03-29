@@ -82,6 +82,9 @@ class DroneEnv(object):
         result = self.compute_reward(quad_state, quad_vel, collision_info)
         state = self.get_obs()
         done = self.isDone(result,quad_state)
+        if collision_info.has_collided:
+            done = 1
+            result -=1000
         return state, result, done
 
     def reset(self):
@@ -165,7 +168,11 @@ class DroneEnv(object):
         dist = self.get_distance(quad_state)
         if dist<1:
             dist =1
-        reward += 300/dist
+        if dist<50:
+            reward += 300
+        elif dist<20:
+            reward += 500
+        reward += 1500/dist
         print(reward)
         return reward
 
@@ -186,7 +193,7 @@ class DroneEnv(object):
             self.client.enableApiControl(False)
             time.sleep(1)
         dist = self.get_distance(quad_state)
-        if dist<1:
+        if dist<20:
             done = 1
         return done
 
@@ -208,7 +215,7 @@ class DroneEnv(object):
 
     def interpret_action(self, action):
         """Interprete action"""
-        scaling_factor = 5
+        scaling_factor = 1.5
         if action.item() == 0:
             self.quad_offset = (0, 0, 0)
         elif action.item() == 1:
