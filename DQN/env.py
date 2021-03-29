@@ -1,10 +1,5 @@
 #! /usr/bin/env python
-"""Environment for Microsoft AirSim Unity Quadrotor using AirSim python API
 
-- Author: Subin Yang
-- Contact: subinlab.yang@gmail.com
-- Date: 2019.06.20.
-"""
 import csv
 import math
 import pprint
@@ -14,7 +9,7 @@ from PIL import Image
 import numpy as np
 
 import airsim
-import setup_path
+# import setup_path
 
 
 class DroneEnv(object):

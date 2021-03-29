@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-"""Simple DQN pytorch agent for Airsim Quadrotor
 
-- Author: Subin Yang
-- Contact: subinlab.yang@gmail.com
-"""
 import gym
 from gym import wrappers
 import random

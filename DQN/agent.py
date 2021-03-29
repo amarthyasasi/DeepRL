@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-"""Environment for Microsoft AirSim Unity Quadrotor
 
-- Author: Subin Yang
-- Contact: subinlab.yang@gmail.com
-"""
 import math
 import random
 from collections import deque
