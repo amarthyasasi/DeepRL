@@ -19,14 +19,15 @@ from env import DroneEnv
 env = DroneEnv()
 
 
-EPISODES = 50  # number of episodes
-EPS_START = 0.9  # e-greedy threshold start value
+EPISODES = 40  # number of episodes
+EPS_START = 0.7  # e-greedy threshold start value
 EPS_END = 0.05  # e-greedy threshold end value
-EPS_DECAY = 200  # e-greedy threshold decay
+EPS_DECAY = 5000  # e-greedy threshold decay
 GAMMA = 0.8  # Q-learning discount factor
 LR = 0.001  # NN optimizer learning rate
-BATCH_SIZE = 1  # Q-learning batch size
+BATCH_SIZE = 4  # Q-learning batch size
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class DQNAgent:
     def __init__(self):
@@ -35,6 +36,7 @@ class DQNAgent:
             nn.ReLU(),
             nn.Linear(21, 7)            
         )
+        self.model = self.model.to(device)
         self.memory = deque(maxlen=10000)
         self.optimizer = optim.Adam(self.model.parameters(), LR)
         self.steps_done = 0
@@ -42,10 +44,11 @@ class DQNAgent:
         self.f4 = open('epoch_loss.txt', 'w')
     
     def act(self, state):
-        eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.steps_done / EPS_DECAY)
+        # eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * self.steps_done / EPS_DECAY)
+        eps_threshold = max(EPS_END, EPS_START - (steps_done + 1) /EPS_DECAY)
         self.steps_done += 1
         if random.random() > eps_threshold:
-            action = self.model(state).data.max(1)[1]
+            action = self.model(state.to(device)).data.max(1)[1]
             action = [action.max(1)[1]]
             return torch.LongTensor([action])
         else:
@@ -69,8 +72,8 @@ class DQNAgent:
         rewards = torch.cat(rewards)
         next_states = torch.cat(next_states)
 
-        current_q = self.model(states)
-        max_next_q = self.model(next_states).detach().max(1)[0]
+        current_q = self.model(states.to(device))
+        max_next_q = self.model(next_states.to(device)).detach().max(1)[0]
         expected_q = rewards + (GAMMA * max_next_q)
         
         loss = F.mse_loss(current_q.squeeze(), expected_q)
@@ -114,7 +117,7 @@ for e in range(1, EPISODES+1):
         f3.write(str(reward)+"\n")
         
         
-        if done:
+        if done or steps>90:
             print("episode:{0}, reward: {1}, score: {2}".format(e, reward, score))
             print("----------------------------------------------------")
             score_history.append(steps)
