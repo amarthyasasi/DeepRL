@@ -1,0 +1,68 @@
+trainer:
+  gpus: -1
+  distributed_backend: "dp"
+  accumulate_grad_batches: 1
+  profiler: False
+  max_epochs: 2000
+
+scheduler:
+  type: MultiStepLR
+  args: 
+    milestones: [20, 40, 50, 60] #[6, 8, 18]
+    gamma: 0.1
+
+optimizer:
+  type: SGD
+  args:
+    lr: 0.0002
+
+environment:
+  position:
+    start:
+      x:   0.0
+      y:   0.0
+      z: -10.0
+    end:
+      x: 100.0
+      y:   0.0
+      z: -10.0
+  quaternion:
+    start:
+      w_val: 1.0
+      x_val: 0.0
+      y_val: 0.0
+      z_val: 0.0
+    end:
+      w_val: 1.0
+      x_val: 0.0
+      y_val: 0.0
+      z_val: 0.0
+  reward:
+    goal: 1000
+    collision: -100
+    factor: 0.1
+  sensor:
+    signal_strength_factor: 0.01
+  agent:
+    velocity_factor: 2
+    
+
+dataset:
+  loader:
+    batch_size: 4
+    num_workers: 8
+    #shuffle: True
+    #sampler: None   
+
+model:
+  replay_buffer_size: 500
+  in_channels: 3
+  actions: 6
+  max_epsilon: 0.9
+  min_epsilon: 0.1
+  stop_decay: 10000
+  sync_rate: 30
+  gamma: 0.9
+  sample_size: 150
+  thresh_dist: 10
+  max_episode: 80
