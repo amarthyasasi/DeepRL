@@ -1,7 +1,7 @@
 import torch
 from models.DDPG import Actor, Critic
 from dataset.RLdataset import *
-from sensors.heat_sensor import HeatSensor
+# from sensors.heat_sensor import HeatSensor
 from agents.drone import Drone
 import os, hydra, logging, glob
 import pytorch_lightning as pl
@@ -35,9 +35,9 @@ class AgentTrainer(pl.LightningModule):
 
 
         # Initialize sensor
-        self.heat_sensor = HeatSensor(source_position,
-                                      strength_factor = self.hparams.environment.sensor.signal_strength_factor,
-                                      reward_factor = self.hparams.environment.reward.factor)
+        # self.heat_sensor = HeatSensor(source_position,
+        #                               strength_factor = self.hparams.environment.sensor.signal_strength_factor,
+        #                               reward_factor = self.hparams.environment.reward.factor)
 
 
         # Initialize Replay buffer
@@ -46,10 +46,10 @@ class AgentTrainer(pl.LightningModule):
 
         # Initialize drone
         self.agent = Drone(start_position = agent_position,
+                           goal_position = source_position,
                            velocity_factor = self.hparams.environment.agent.velocity_factor,
                            hparams = self.hparams,
-                           buffer = self.replay_buffer,
-                           sensor = self.heat_sensor)
+                           buffer = self.replay_buffer)
 
         # Actor networks
         self.net = Actor(**self.hparams.model.actor)
@@ -102,8 +102,8 @@ class AgentTrainer(pl.LightningModule):
         #print(rewards.shape, actions.shape, "reward, action")
         # print(states["image"].shape)
         # state_action_values = self.net(states["image"], states["signal"]).gather(1, actions.unsqueeze(-1)).squeeze(-1)
-        action_value = self.net(next_states["image"], next_states["signal"])
-        Q_value = self.critic(next_states["image"], next_states["signal"], action_value).squeeze(-1)
+        action_value = self.net(next_states["image"])
+        Q_value = self.critic(next_states["image"], action_value).squeeze(-1)
 
         # print(state_action_values)
 
@@ -112,7 +112,7 @@ class AgentTrainer(pl.LightningModule):
 
             #next_action_value = self.target_net(next_states["image"], next_states["signal"])
             #print(next_action_value.shape, "action")
-            next_Q_value = self.target_critic(states["image"], states["signal"], actions.float()).squeeze(-1)
+            next_Q_value = self.target_critic(states["image"], actions.float()).squeeze(-1)
             # next_state_values[dones] = 0.0
             #print("Q value:", next_Q_value.shape)
             #next_action_value = next_action_value.detach()

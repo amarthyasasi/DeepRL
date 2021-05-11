@@ -10,10 +10,6 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.autograd import Variable
 
-'''
-Author: Rahul Sajnani
-Date  : 1 March 2021
-'''
 def conv_block(in_channels, out_channels, kernel, padding):
 
     return nn.Sequential(
@@ -96,7 +92,7 @@ class Actor(nn.Module):
         self.fc2.weight.data = fanin_init(self.fc2.weight.data.size())
         self.fc3.weight.data.uniform_(-init_w, init_w)
 
-    def forward(self, x, x_sensor):
+    def forward(self, x):
 
         #print(x.shape)
         x = self.pool(F.relu(self.conv1(x)))
@@ -105,7 +101,7 @@ class Actor(nn.Module):
 
         x = x.view(x.size(0), -1)
         #print(x.shape)
-        x = torch.hstack((x, x_sensor))
+        # x = torch.hstack((x, x_sensor))
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
 
@@ -134,7 +130,7 @@ class Critic(nn.Module):
         self.fc2.weight.data = fanin_init(self.fc2.weight.data.size())
         self.fc3.weight.data.uniform_(-init_w, init_w)
 
-    def forward(self, x, x_sensor, action):
+    def forward(self, x, action):
 
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
@@ -142,7 +138,7 @@ class Critic(nn.Module):
 
         x = x.view(x.size(0), -1)
         #print(x.shape, x_sensor.shape, action.shape)
-        out = torch.cat([x, x_sensor, action], 1)
+        out = torch.cat([x, action], 1)
         #print(out.shape)
         out = self.fc1(out)
         out = self.relu(out)
@@ -169,7 +165,7 @@ class DQN(nn.Module):
         self.fc5 = nn.Linear(512, 64)
         self.fc6 = nn.Linear(64, num_actions)
 
-    def forward(self, x, x_sensor):
+    def forward(self, x):
         '''
         Inputs:
             x       - B, C, H, W   - Batch of images
@@ -181,7 +177,7 @@ class DQN(nn.Module):
         x = self.pool(F.relu(self.conv3(x)))
 
         x = x.view(x.size(0), -1)
-        x = torch.hstack((x, x_sensor))
+        # x = torch.hstack((x, x_sensor))
         x = F.relu(self.fc4(x))
         x = F.relu(self.fc5(x))
 
@@ -191,14 +187,14 @@ class DQN(nn.Module):
 if __name__=="__main__":
 
     x = torch.randn(2, 3, 256, 144)
-    x_sensor = torch.randn(2, 1)
+    # x_sensor = torch.randn(2, 1)
     x_action = torch.randn(2, 3)
 
     actor = Actor()
     critic = Critic(action_dim = 3)
-    x_action = actor(x, x_sensor)
+    x_action = actor(x)
 
-    out = critic(x, x_sensor, x_action)
+    out = critic(x, x_action)
     # net = DQN(3, 6)
     # out = net(x, x_sensor)
 

@@ -1,5 +1,5 @@
 from torch.serialization import storage_to_tensor_type
-from sensors.heat_sensor import HeatSensor
+# from sensors.heat_sensor import HeatSensor
 import torch
 import airsim
 from collections import deque, namedtuple
@@ -38,15 +38,15 @@ class Drone:
     '''
     Drone class
     '''
-    def __init__(self, start_position, velocity_factor, hparams, buffer, sensor):
+    def __init__(self, start_position, goal_position, velocity_factor, hparams, buffer):
         '''
         Drone initializations
         start position, velocity factor, hyper parameters, replay buffer
         '''
         self.buffer = buffer
-        self.sensor = sensor
         self.hparams = hparams
         self.start_position = start_position
+        self.goal_position = goal_position
         self.scaling_factor = velocity_factor
         self.client = None
         self.noise = OUNoise(action_dimension = 3)
@@ -91,14 +91,14 @@ class Drone:
 
         if len_buffer < self.num_batch:
             image_zero = torch.zeros_like(states["image"])
-            signal_zero = torch.zeros_like(states["signal"])
+            # signal_zero = torch.zeros_like(states["signal"])
             action_zero = torch.zeros_like(actions)
             rewards_zero = torch.zeros_like(torch.tensor([rewards]))
             dones_zero = torch.zeros_like(torch.tensor([dones]))
 
         image_batch = []
-        signal_batch = []
-        new_signal_batch = []
+        # signal_batch = []
+        # new_signal_batch = []
         new_image_batch = []
 
         for i in range(self.num_batch):
@@ -106,9 +106,9 @@ class Drone:
             if i < self.num_batch - len_buffer:
                 #print("zeros")
                 image_batch.append(image_zero)
-                signal_batch.append(signal_zero)
+                # signal_batch.append(signal_zero)
                 new_image_batch.append(image_zero)
-                new_signal_batch.append(signal_zero)
+                # new_signal_batch.append(signal_zero)
             else:
                 index = i - (self.num_batch - len_buffer)
                 exp_old = self.previous_states[index]
@@ -116,17 +116,25 @@ class Drone:
                 states_old, actions_old, rewards_old, dones_old, next_states_old = exp_old
 
                 image_batch.append(states_old["image"])
-                signal_batch.append(states_old["signal"])
+                # signal_batch.append(states_old["signal"])
                 new_image_batch.append(next_states_old["image"])
-                new_signal_batch.append(next_states_old["signal"])
+                # new_signal_batch.append(next_states_old["signal"])
 
-        state_out = {"image": torch.cat(image_batch, dim = 0), "signal":torch.cat(signal_batch, dim = 0)}
+        state_out = {"image": torch.cat(image_batch, dim = 0)}
 
-        next_state_out = {"image": torch.cat(new_image_batch, dim = 0), "signal": torch.cat(new_signal_batch, dim = 0)}
+        next_state_out = {"image": torch.cat(new_image_batch, dim = 0)}
 
         exp_out = Experience(state=state_out, action = actions, reward = torch.tensor([rewards]), done = torch.tensor([dones]), new_state = next_state_out)
 
         return exp_out
+    def getDistanceFromDestination(self, position):
+        '''
+        Get distance from source of the signal
+        '''
+
+        distance = torch.sqrt(torch.sum(torch.square(position - self.goal_position)))
+
+        return distance
 
     def hasReachedGoal(self):
         '''
@@ -134,7 +142,7 @@ class Drone:
         '''
 
         current_position = self.convertPositionToTensor(self.position.position)
-        distance = self.sensor.getDistanceFromDestination(current_position)
+        distance = self.getDistanceFromDestination(current_position)
         if distance < self.hparams.model.thresh_dist:
             print("#"*100)
             print("Reached goal")
@@ -189,23 +197,23 @@ class Drone:
 
         position = self.convertPositionToTensor(self.position.position)
         state_image = self.getImage()
-        state_signal_strength = self.sensor.getSignalStrength(position)
+        # state_signal_strength = self.sensor.getSignalStrength(position)
 
         state_image = torch.tensor(state_image).permute(2, 0, 1).float()
-        state_signal_strength = torch.tensor([state_signal_strength]).float()
+        # state_signal_strength = torch.tensor([state_signal_strength]).float()
 
         #print(state_image.max())
         state_image = state_image / 255.0
 
         #print(state_image.shape, state_signal_strength.shape)
-        return {"image": state_image, "signal": state_signal_strength}
+        return {"image": state_image}
 
     def getAction(self, net, epsilon, device):
         '''
         Perform action
         '''
         state_dict = self.getAgentState()
-        exp_out = Experience(state=state_dict, action = state_dict["signal"], reward = state_dict["signal"], done = state_dict["signal"], new_state = state_dict)
+        exp_out = Experience(state=state_dict, action = state_dict["image"], reward = state_dict["image"], done = state_dict["image"], new_state = state_dict)
         exp = self.batchStates(exp_out)
         state_dict, _, _, _, _ = exp
 
@@ -214,7 +222,7 @@ class Drone:
                 state_dict[key] = state_dict[key].cuda(device)
 
         #print(state_dict["image"].shape,state_dict["signal"].shape )
-        action = net(state_dict["image"].unsqueeze(0), state_dict["signal"].unsqueeze(0)).detach().cpu().numpy().squeeze()
+        action = net(state_dict["image"].unsqueeze(0)).detach().cpu().numpy().squeeze()
         if np.random.random() < epsilon:
             action_out = torch.tensor([action[0], action[1], action[2]])
             noise_out = self.noise.noise()
@@ -224,6 +232,18 @@ class Drone:
 
         return action
 
+    def getReward(self, position):
+        '''
+        Get the reward for being reaching a position
+        '''
+
+        distance = self.getDistanceFromDestination(position)
+        # reward   = self.reward_factor * (- distance)
+        reward = 1 - (distance / self.max_distance)**(0.4)
+
+        reward   = torch.tensor([reward])
+
+        return reward
 
     @torch.no_grad()
     def playStep(self, net, epsilon, device):
@@ -264,7 +284,7 @@ class Drone:
         print(self.position.position)
         # print(self.client.getMultirotorState().kinematics_estimated.position)
         if not done:
-            reward = self.sensor.getReward(current_position)
+            reward = self.getReward(current_position)
         print(reward)
 
         # exp = batchStates(state_dict, action_offset, reward, done, new_state_dict)
