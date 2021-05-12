@@ -75,4 +75,3 @@ model:
   sample_size: 80
   thresh_dist: 10
   max_episode: 80
-
