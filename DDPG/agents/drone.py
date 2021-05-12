@@ -308,15 +308,16 @@ class Drone:
 
         # Either reached goal or collided
         if self.hasReachedGoal():
-            reward = self.hparams.environment.reward.goal
+            reward = torch.tensor([self.hparams.environment.reward.goal])
             done = 1
         elif self.hasCollided():
-            reward = self.hparams.environment.reward.collision
+            reward = torch.tensor([self.hparams.environment.reward.collision])
             done = 1
         else:
             done = 0
 
         return done, reward
+
 
 
     def postprocessImage(self, responses):
