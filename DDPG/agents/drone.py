@@ -53,7 +53,7 @@ class Drone:
         self.num_batch = 3
         self.reset()
         self.previous_states = deque(maxlen=self.num_batch)
-
+        self.max_distance = 1000
     def initializeClient(self):
         '''
         Initializing airsim client
@@ -93,7 +93,7 @@ class Drone:
             image_zero = torch.zeros_like(states["image"])
             # signal_zero = torch.zeros_like(states["signal"])
             action_zero = torch.zeros_like(actions)
-            rewards_zero = torch.zeros_like(torch.tensor([rewards]))
+            #rewards_zero = torch.zeros_like(torch.tensor([rewards]))
             dones_zero = torch.zeros_like(torch.tensor([dones]))
 
         image_batch = []
@@ -213,7 +213,7 @@ class Drone:
         Perform action
         '''
         state_dict = self.getAgentState()
-        exp_out = Experience(state=state_dict, action = state_dict["image"], reward = state_dict["image"], done = state_dict["image"], new_state = state_dict)
+        exp_out = Experience(state=state_dict, action = state_dict["image"], reward = 1, done = 0, new_state = state_dict)
         exp = self.batchStates(exp_out)
         state_dict, _, _, _, _ = exp
 

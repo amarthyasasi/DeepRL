@@ -78,7 +78,7 @@ class Actor(nn.Module):
 
         self.pool = nn.MaxPool2d(3)
 
-        self.fc1 = nn.Linear(2880 + in_channels // 3, 512)
+        self.fc1 = nn.Linear(2880, 512)
         self.fc2 = nn.Linear(512, 64)
         self.fc3 = nn.Linear(64, action_dim)
 
@@ -117,7 +117,7 @@ class Critic(nn.Module):
 
         self.pool = nn.MaxPool2d(3)
 
-        self.fc1 = nn.Linear(2880 + in_channels // 3 + action_dim, 512)
+        self.fc1 = nn.Linear(2880  + action_dim, 512)
         self.fc2 = nn.Linear(512, 64)
         self.fc3 = nn.Linear(64, 1)
 
