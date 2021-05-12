@@ -40,8 +40,8 @@ environment:
       y_val: 0.0
       z_val: 0.0
   reward:
-    goal: 1000
-    collision: -100
+    goal: 1000.0
+    collision: -100.0
     factor: 0.001
   agent:
     velocity_factor: 2
