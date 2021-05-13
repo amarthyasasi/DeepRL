@@ -53,6 +53,7 @@ class Drone:
         self.num_batch = 3
         self.reset()
         self.previous_states = deque(maxlen=self.num_batch)
+        self.tstep = 0
         self.max_distance = 1000
     def initializeClient(self):
         '''
@@ -239,7 +240,9 @@ class Drone:
 
         distance = self.getDistanceFromDestination(position)
         # reward   = self.reward_factor * (- distance)
-        reward = 1 - (distance / self.max_distance)**(0.4)
+        # reward = 1 - (distance / self.max_distance)**(0.4)
+        self.tstep += 1
+        reward = (1500/distance)**0.5 + 80/(self.tstep)
 
         reward   = torch.tensor([reward])
 
