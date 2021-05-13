@@ -1,5 +1,4 @@
 from torch.serialization import storage_to_tensor_type
-# from sensors.heat_sensor import HeatSensor
 import torch
 import airsim
 from collections import deque, namedtuple

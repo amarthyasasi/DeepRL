@@ -1,13 +1,12 @@
 import torch
-from models.DDPG import Actor, Critic
-from dataset.RLdataset import *
-# from sensors.heat_sensor import HeatSensor
-from agents.drone import Drone
+from env import Drone
 import os, hydra, logging, glob
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.loggers import CometLogger, TensorBoardLogger
 from torch.utils.data import DataLoader
+from ActorCritic import Actor, Critic
+from buffers import *
 import torch.nn as nn
 from collections import OrderedDict
 
@@ -32,12 +31,6 @@ class AgentTrainer(pl.LightningModule):
         agent_position  = torch.tensor([[self.hparams.environment.position.start.x],
                                         [self.hparams.environment.position.start.y],
                                         [self.hparams.environment.position.start.z]]).float()
-
-
-        # Initialize sensor
-        # self.heat_sensor = HeatSensor(source_position,
-        #                               strength_factor = self.hparams.environment.sensor.signal_strength_factor,
-        #                               reward_factor = self.hparams.environment.reward.factor)
 
 
         # Initialize Replay buffer
@@ -243,7 +236,7 @@ class AgentTrainer(pl.LightningModule):
 seed_everything(123)
 log = logging.getLogger(__name__)
 
-@hydra.main(config_path="config", config_name="DDPG.yaml")
+@hydra.main(config_path="./", config_name="HyperParams.yaml")
 def main(cfg):
 
     tb_logger = TensorBoardLogger(save_dir = "./")
