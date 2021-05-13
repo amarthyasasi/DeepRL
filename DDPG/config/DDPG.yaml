@@ -12,9 +12,10 @@ scheduler:
     gamma: 0.1
 
 optimizer:
-  type: Adam
+  type: SGD
   args:
     lr: 0.0002
+    momentum: 0.2
 
 environment:
   server:
