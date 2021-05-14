@@ -241,7 +241,7 @@ class Drone:
         # reward   = self.reward_factor * (- distance)
         # reward = 1 - (distance / self.max_distance)**(0.4)
         self.tstep += 1
-        reward = (1500/distance)**0.5 + 80/(self.tstep)
+        reward = (1500/distance)**0.5+(30-distance)/20
 
         reward   = torch.tensor([reward])
 
