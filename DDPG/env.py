@@ -1,4 +1,4 @@
-from torch.serialization import storage_to_tensor_type
+ifrom torch.serialization import storage_to_tensor_type
 import torch
 import airsim
 from collections import deque, namedtuple
@@ -127,7 +127,7 @@ class Drone:
         exp_out = Experience(state=state_out, action = actions, reward = torch.tensor([rewards]), done = torch.tensor([dones]), new_state = next_state_out)
 
         return exp_out
-    def getDistanceFromDestination(self, position):
+    def getDistanceFromStart(self, position):
         '''
         Get distance from source of the signal
         '''
@@ -135,6 +135,15 @@ class Drone:
         distance = torch.sqrt(torch.sum(torch.square(position - self.goal_position)))
 
         return distance
+
+    def getDistanceFromDestination(self, position):
+        '''
+        Get distance from source of the signal
+        '''
+
+        distance_s = torch.sqrt(torch.sum(torch.square(position - self.start_position)))
+
+        return distance_s
 
     def hasReachedGoal(self):
         '''
@@ -238,10 +247,12 @@ class Drone:
         '''
 
         distance = self.getDistanceFromDestination(position)
+        distance_s = self.getDistanceFromStart(position)
+
         # reward   = self.reward_factor * (- distance)
         # reward = 1 - (distance / self.max_distance)**(0.4)
         self.tstep += 1
-        reward = (1500/distance)**0.5+(30-distance)/20
+        reward = (1500/distance)**0.5+(30-distance)/20 + distance_s/10
 
         reward   = torch.tensor([reward])
 
